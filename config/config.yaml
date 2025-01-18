@@ -1,0 +1,6 @@
+data:
+    main_path = '../input/'
+    train_dir = main_path + 'seg_train/seg_train/'
+    test_dir = main_path + 'seg_test/seg_test/'
+    classes = ['mountain', 'street', 'glacier', 'buildings', 'sea', 'forest']
+
