@@ -3,3 +3,7 @@
 data/*
 !data/.gitignore
 *.pth
+*.cypthon
+
+__pycache__/
+!**/__pycache__/

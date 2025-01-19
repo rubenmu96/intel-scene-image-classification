@@ -62,6 +62,7 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type=float, default=1e-5, help='Learning rate')
     parser.add_argument('--epochs', type=int, default=30, help='Number of training epochs')
     parser.add_argument('--onnx', type=bool, default=True, help='If converting to onnx after training')
+    # add parser for checkpoint?
     args = parser.parse_args()
 
     main(args)

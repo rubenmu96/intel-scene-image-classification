@@ -32,10 +32,13 @@ def predict(inp):
 # try to add more functionality?
 # maybe log whats been classified into a file?
 
+# display inference time? https://github.com/gradio-app/gradio/issues/4559
+# add example image? (see: https://www.gradio.app/guides/object-detection-from-video)
 if __name__ == '__main__':
     gr.Interface(
         fn=predict,
         inputs=gr.Image(type="pil", height=512, width=728, scale=True, min_width=250, interactive=True),
         outputs=gr.Label(num_top_classes=3),
         title="Intel scene image classification",
+        examples=["data/seg_pred/seg_pred/3.jpg"], # use another image, call it test.jpg or something
     ).launch()

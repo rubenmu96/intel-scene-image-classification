@@ -11,3 +11,7 @@ Using convolutional neural networks to classify images in the Intel scene datase
 - write documentation
 - test running it on gpu
 - Would it be possible to add link to image in the gradio app, then run it on the link with image. Maybe add some verification that it is an image?
+- add possibility to run from a checkpoint?
+
+## Gitignore:
+- remove .cypython
