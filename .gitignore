@@ -4,6 +4,7 @@ data/*
 !data/.gitignore
 *.pth
 *.cypthon
+*.onnx
 
 __pycache__/
 **/__pycache__/
