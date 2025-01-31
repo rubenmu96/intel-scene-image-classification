@@ -6,6 +6,7 @@ from sklearn.utils import shuffle
 from PIL import Image
 
 class IntelDataset(Dataset):
+    """PyTorch dataset class with transformers from Albumentations"""
     def __init__(self, data, transform=None):
         self.data = data
         self.transform = transform
@@ -67,6 +68,7 @@ def create_dataframe(dataset, classes):
 
 
 def load_data(cfg):
+    """Get data..."""
     label2id = {class_name: i for i, class_name in enumerate(cfg.classes)}
 
     train_set = create_dataframe(cfg.train_dir, label2id)

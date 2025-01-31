@@ -2,7 +2,7 @@ import gradio as gr
 import cv2
 import onnxruntime as ort
 import numpy as np
-from config.config import cfg
+from config import cfg
 
 # make one also for non-onnx?
 
@@ -25,7 +25,7 @@ def predict(inp):
     prediction = np.exp(prediction) / np.sum(np.exp(prediction))
     probs = {labels[i]: float(prediction[i]) for i in range(len(labels))}
     sorted_probs = sorted(probs.items(), key=lambda x: x[1], reverse=True)
-    return {label: prob for label, prob in sorted_probs[:3]}
+    return {label: prob for label, prob in sorted_probs}
 
 # see more about layout here:
 # https://www.gradio.app/guides/controlling-layout
@@ -40,5 +40,5 @@ if __name__ == '__main__':
         inputs=gr.Image(type="pil", height=512, width=728, scale=True, min_width=250, interactive=True),
         outputs=gr.Label(num_top_classes=3),
         title="Intel scene image classification",
-        examples=["data/seg_pred/seg_pred/3.jpg"], # use another image, call it test.jpg or something
+        examples=["data/seg_pred/seg_pred/3.jpg"], # use another image, call it example/image1.jpg (or png) or something, do 3-5 images?
     ).launch()

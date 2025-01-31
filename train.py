@@ -24,7 +24,6 @@ def main(args):
 
     classifier = ImageClassifier(
         cfg=cfg,
-        out=len(cfg.classes),
         require_grad=True,
         multiple_gpus=True
     )

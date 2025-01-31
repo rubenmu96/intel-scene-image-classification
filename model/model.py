@@ -6,9 +6,9 @@ from torchvision import models
 import time
 
 class ImageClassifier:
-    def __init__(self, cfg, out=1000, require_grad=True, multiple_gpus=True):
+    def __init__(self, cfg, require_grad=True, multiple_gpus=True):
         self.modelname = cfg.model
-        self.out = out
+        self.out = cfg.out_channels
         self.require_grad = require_grad
         self.multiple_gpus = multiple_gpus
         self.device = cfg.device
