@@ -1,44 +1,74 @@
-import gradio as gr
-import cv2
-import onnxruntime as ort
+import argparse
 import numpy as np
+import torch
+import onnxruntime as ort
+import cv2
 from config import cfg
+import gradio as gr
+from model import ImageClassifier
 
-# make one also for non-onnx?
+def load_model(cfg, model_path, model_arch=None):
+    if model_path.endswith(".onnx"):
+        model = ort.InferenceSession(model_path)
+    elif model_path.endswith(".pth"):
+        if model_arch is None:
+            raise ValueError("For .pth models, provide a model architecture.")
+        
+        model = model_arch
+        state_dict = torch.load(model_path, map_location=cfg.device)
 
-ort_session = ort.InferenceSession("model.onnx")
-labels = cfg.classes
-transform = cfg.test_transform
+        model.load_state_dict(state_dict)
+        model.eval()
+    else:
+        raise ValueError("Unsupported model format. Use .onnx or .pth")
+    return model
 
-def predict(inp):
-    image_np = np.array(inp)
-    if image_np.shape[2] == 3:
-        image_np = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+def gradio_application(cfg, model, model_path, n_preds=3):
+    def predict(inp):
+        image_np = np.array(inp)
+        if image_np.shape[2] == 3:
+            image_np = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
 
-    augmented = transform(image=image_np)
-    inp = augmented['image'].unsqueeze(0).numpy()
+        augmented = cfg.transform(image=image_np)
+        inp = augmented['image'].unsqueeze(0)
 
-    ort_inputs = {ort_session.get_inputs()[0].name: inp}
-    ort_outs = ort_session.run(None, ort_inputs)
-    prediction = ort_outs[0][0]
+        if model_path.endswith(".onnx"):
+            inp = inp.numpy()
+            ort_inputs = {model.get_inputs()[0].name: inp}
+            ort_outs = model.run(None, ort_inputs)
+            prediction = ort_outs[0][0]
+        else:
+            with torch.no_grad():
+                prediction = model(inp).squeeze(0).numpy()
 
-    prediction = np.exp(prediction) / np.sum(np.exp(prediction))
-    probs = {labels[i]: float(prediction[i]) for i in range(len(labels))}
-    sorted_probs = sorted(probs.items(), key=lambda x: x[1], reverse=True)
-    return {label: prob for label, prob in sorted_probs}
-
-# see more about layout here:
-# https://www.gradio.app/guides/controlling-layout
-# try to add more functionality?
-# maybe log whats been classified into a file?
-
-# display inference time? https://github.com/gradio-app/gradio/issues/4559
-# add example image? (see: https://www.gradio.app/guides/object-detection-from-video)
-if __name__ == '__main__':
+        prediction = np.exp(prediction) / np.sum(np.exp(prediction))
+        probs = {cfg.labels[i]: float(prediction[i]) for i in range(len(cfg.labels))}
+        sorted_probs = sorted(probs.items(), key=lambda x: x[1], reverse=True)
+        
+        return {label: prob for label, prob in sorted_probs}
+    
     gr.Interface(
         fn=predict,
-        inputs=gr.Image(type="pil", height=512, width=728, scale=True, min_width=250, interactive=True),
-        outputs=gr.Label(num_top_classes=3),
+        inputs=gr.Image(type="pil", height=512, width=728, scale=True, interactive=True),
+        outputs=gr.Label(num_top_classes=n_preds),
         title="Intel scene image classification",
-        examples=["data/seg_pred/seg_pred/3.jpg"], # use another image, call it example/image1.jpg (or png) or something, do 3-5 images?
+        examples=[f"./examples/test/image{img}.jpg" for img in range(1, 7)]
     ).launch()
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_path', type=str, default="resnet50.pth", help='Model to use (.pth or .onnx)')
+    parser.add_argument('--top_n', type=int, default=3, help='Top n predictions')
+    args = parser.parse_args()
+    if args.model_path.endswith(".pth"):
+        model_arch = ImageClassifier(cfg).get_model(args.model_path)
+    else:
+        model_arch = None
+    model = load_model(cfg, args.model_path, model_arch)
+
+    gradio_application(
+        cfg=cfg,
+        model=model,
+        model_path=args.model_path,
+        n_preds=args.top_n
+    )

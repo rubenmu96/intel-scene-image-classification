@@ -8,7 +8,6 @@ def convert_onnx(model_path, save_path="model"):
 
     model = ImageClassifier(
         cfg=cfg,
-        out=cfg.out_channels
     ).get_model(model_path=model_path)
     model.eval()
 
@@ -25,3 +24,6 @@ def convert_onnx(model_path, save_path="model"):
         output_names=["output"],
         dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}}
     )
+
+if __name__ == "__main__":
+    convert_onnx("resnet50.pth", "test_onnx")

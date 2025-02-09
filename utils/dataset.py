@@ -29,7 +29,7 @@ class IntelDataset(Dataset):
         return image, label
 
 
-def create_dataframe(dataset, classes):
+def create_dataframe(path, classes):
     """
     Creates a dataframe from a dataset directory.
     
@@ -44,18 +44,15 @@ def create_dataframe(dataset, classes):
     │   ├── img2_class2.jpg
     │   └── ...
     └── ...
-    
-    Parameters:
-    - dataset: str, path to the dataset directory.
-    - classes: dict, a mapping from folder names to class labels.
     """
     labels, images = [], []
         
-    for folder in os.listdir(dataset):
+    for folder in os.listdir(path):
+        # drop?
         if folder not in classes:
             continue
         label = classes[folder]
-        path = os.path.join(dataset, folder)
+        path = os.path.join(path, folder)
         
         for file in os.listdir(path):
             img_path = os.path.join(path, file)

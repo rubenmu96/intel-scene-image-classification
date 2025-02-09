@@ -4,7 +4,7 @@ from PIL import Image
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
-def pie_chart(train, test, classes, col_name="labels"):
+def pie_chart(train, test, classes, col_name="labels", save_plot=False):
     """
     This function creates a pie chart for training set and test set for
     showing the distribution of the classes
@@ -17,7 +17,6 @@ def pie_chart(train, test, classes, col_name="labels"):
     
     TODO
     - check for handling of missing classes in train/test set
-    - What if "labels" have a different name?
     """
     _, train_counts = np.unique(train[col_name], return_counts=True)
     _, test_counts = np.unique(test[col_name], return_counts=True)
@@ -36,7 +35,7 @@ def pie_chart(train, test, classes, col_name="labels"):
     plt.show()
 
 
-def display_nxn(images, labels, classes, nxn=5):
+def display_nxn(images, labels, classes, nxn=5, save_plot=False):
     '''
     Displays n x n images.
 
@@ -80,11 +79,7 @@ def _add_transform(img, trans, cfg):
     transformed_image = np.clip(transformed_image, 0, 1)
     return transformed_image
 
-def visualize_transform(image, transforms, cfg):
-    """
-    Displays the original image and the different data augmentations.
-    """
-
+def visualize_transform(image, transforms, cfg, save_plot=False):
     image = Image.open(image).convert('RGB')
     
     figsize = 4 * len(transforms)
@@ -105,6 +100,5 @@ def visualize_transform(image, transforms, cfg):
         
     plt.show()
 
-
     # TODO
-    # - add confusion matrix
+    # - add confusion matrix and maybe a few other metrics?

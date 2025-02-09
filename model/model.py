@@ -2,11 +2,12 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-from torchvision import models
 import time
+from torchvision import models
 
 class ImageClassifier:
     def __init__(self, cfg, require_grad=True, multiple_gpus=True):
+        self.cfg = cfg
         self.modelname = cfg.model
         self.out = cfg.out_channels
         self.require_grad = require_grad
@@ -27,7 +28,6 @@ class ImageClassifier:
         
         if torch.cuda.device_count() > 1 and self.multiple_gpus:
             model = nn.DataParallel(model)
-        
         return model.to(self.device)
     
     def _get_model_and_weights(self):
@@ -35,6 +35,7 @@ class ImageClassifier:
             "resnet18": (models.resnet18, models.ResNet18_Weights.DEFAULT),
             "resnet34": (models.resnet34, models.ResNet34_Weights.DEFAULT),
             "resnet50": (models.resnet50, models.ResNet50_Weights.DEFAULT),
+            "resnet101": (models.resnet101, models.ResNet101_Weights.DEFAULT),
         }
         return model_mapping[self.modelname]
     
@@ -48,6 +49,7 @@ class ImageClassifier:
         return self.model
 
     def save_best_model(self, name=None):
+        """Expand by saving other stuff (like epoch, learning rate, optimizer etc.)"""
         if name is None:
             name = f"{self.modelname}_intelscene.pth"
         model_to_save = self.model.module if isinstance(self.model, nn.DataParallel) else self.model
@@ -60,6 +62,20 @@ class ImageClassifier:
         else:
             print(df.tail(1).to_markdown(index=False).split('\n')[1])
             print(df.tail(1).to_markdown(index=False).split('\n')[2])
+
+    def early_stopping(self, es, current_loss, best_loss, patience, save_path, reset=True):
+        if patience <= 0:
+            raise ValueError("Patience must be a positive integer.")
+        
+        if current_loss < best_loss:
+            self.save_best_model(save_path)
+            if reset: es = 0
+            best_loss = current_loss
+        else:
+            es += 1
+    
+        stop = es >= patience
+        return es, best_loss, stop
 
     def train(self, train_data, optimizer, criterion, tracker):
         total_loss = 0
@@ -104,22 +120,12 @@ class ImageClassifier:
 
         return total_loss / num_batches, tracker.compute_metrics()
 
-    def run(
-        self,
-        epochs,
-        train_data,
-        valid_data,
-        criterion,
-        optimizer,
-        tracker,
-        early_stopping=np.inf,
-        printing=False
-    ):
+    def run(self, train_data, valid_data, criterion, 
+            optimizer, tracker, printing=False):
         best_loss = np.inf
-        early_stopping_counter = 0
         epoch_metrics = []
-
-        for n in range(epochs):
+        es, best_loss = 0, float("inf")
+        for n in range(self.cfg.epochs):
             start = time.time()
             train_loss, train_metrics = self.train(train_data, optimizer, criterion, tracker)
             end = time.time()
@@ -141,14 +147,11 @@ class ImageClassifier:
             if printing:
                 self.print_metrics(epoch_metrics)
 
-            if valid_loss < best_loss:
-                best_loss = valid_loss
-                self.save_best_model()
-                early_stopping_counter = 0
-            else:
-                early_stopping_counter += 1
-
-            if early_stopping_counter >= early_stopping:
+            
+            es, best_loss, stop = self.early_stopping(
+                es, valid_loss, best_loss, self.cfg.early_stopping, self.cfg.save_path, reset=self.cfg.reset
+            )
+            if stop:
                 print("Early stopping triggered.")
                 break
 

@@ -22,12 +22,12 @@ class MetricCalculator:
             self.fn[c] += (~pred_eq_c & target_eq_c).sum().item()
             self.tn[c] += (~pred_eq_c & ~target_eq_c).sum().item()
     
-    def compute_metrics(self):
-        accuracy = (self.tp + self.tn) / (self.tp + self.fp + self.fn + self.tn)
-        precision = torch.where(self.tp + self.fp > 0, self.tp / (self.tp + self.fp), torch.zeros_like(self.tp))
-        recall = torch.where(self.tp + self.fn > 0, self.tp / (self.tp + self.fn), torch.zeros_like(self.tp))
-        f1 = torch.where(precision + recall > 0, 2 * (precision * recall) / (precision + recall), torch.zeros_like(precision))
-
+    def compute_metrics(self, eps=1e-7):
+        accuracy = (self.tp + self.tn) / (self.tp + self.fp + self.fn + self.tn + eps)
+        precision = self.tp / (self.tp + self.fp + eps)
+        recall = self.tp / (self.tp + self.fn + eps)
+        f1 = 2 * (precision * recall) / (precision + recall + eps)
+    
         return {
             'accuracy': accuracy.mean().item(),
             'macro_precision': precision.mean().item(),
