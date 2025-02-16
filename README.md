@@ -22,10 +22,9 @@ Gradio application           |  Gradio application in action
 The [Intel scene dataset]((https://www.kaggle.com/datasets/puneet6060/intel-image-classification)) consists of 6 classes (mountain, street, glacier, buildings, sea, forest). The original size of the images are 150x150, but are resized to 224x224. As the figure below shows, the dataset is close to being evenly distributed, with approximately 1/6th of the images being in each class.
 
 
-Dataset distribution (SWAP TO VALIDATION?)                  |  4x4 grid of images from dataset
+Dataset distribution                         |  4x4 grid of images from dataset
 :-------------------------------------------:|:-----------------------------------:
-![](examples/figures/data_distribution.png)  |![](examples/figures/image_4x4.png)
-
+![](examples/figures/data_distrib.png)  |![](examples/figures/image_4x4.png)
 
 The following data augmentation techniques were used, with each augmentation technique having 25% chance to be applied. 
 
