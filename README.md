@@ -9,8 +9,6 @@ To run the gradio application:
 ```python inference.py```.
 
 
-Make images same size with rescale_images.py
-
 Figures below illustrate the simple Gradio application that accepts an image, then outputs the top 3 probabilities. 
 
 Gradio application           |  Gradio application in action
