@@ -38,9 +38,7 @@ Most of the parameters can be changed under config/config.py, such as image size
 
 
 ## Results
-The best validation loss occurs at epoch 9, with $\text{valid\_loss}=0.1748$, $\text{valid\_accuracy}=0.9784$ and $\text{valid\_f1}=0.9366$. The number of epochs was 30, but early stopping kicked in at epoch 14.
-
-TODO: convert training time to "XmYs" or something like that?
+The best validation loss occurs at epoch 9, with $\text{validation loss}=0.1748$, $\text{validation accuracy}=0.9784$ and $\text{validation f1 score}=0.9366$. The number of epochs was 30, but early stopping kicked in at epoch 14.
 
 |Epoch|Training time (m)|train_loss|train_accuracy|train_f1|valid_loss|valid_accuracy|valid_f1|
 |-----|-----------------|----------|--------------|--------|----------|--------------|--------|
@@ -61,7 +59,7 @@ TODO: convert training time to "XmYs" or something like that?
 
 
 
-From the confusion matrix, we see that all classes score well, but mountain & glaciers and street & buildings can in some cases be mixed up. From the image in 2nd row and 1st column, we can see that there are some outliers that exist in the dataset. There are also some examples where it is hard to judge if it is a street or building that is the correct label. 
+From the confusion matrix, we see that all classes score well, but mountain & glaciers and street & buildings can in some cases be mixed up. We can see that there are some outliers that exist in the dataset, such as the man playing the guitar and the man playing drums. There are also some examples where it is hard to judge if it is a street or building that is the correct classification.
 
 Confusion matrix                  |  4x4 grid of wrongly classified examples
 :-------------------------------------------:|:-----------------------------------:

@@ -61,22 +61,24 @@ def display_nxn(images, labels, classes, nxn=5):
     plt.show()
 
 
-def _add_transform(img, trans, cfg):
-    """
-    
-    """
+def _unnormalize(img, mean, std):
+    return img * np.array(std) + np.array(mean)
+
+
+def _add_transform(img, transform, cfg):
     base_transform = A.Compose([
         A.Resize(width=cfg.image_size, height=cfg.image_size, p=1.0),
-        trans,
+        transform,
         A.Normalize(mean=cfg.mean, std=cfg.std),
         ToTensorV2(),
     ])
 
     augmented = base_transform(image=img)['image']
     transformed_image = augmented.permute(1, 2, 0).numpy()
-    transformed_image = transformed_image * np.array(cfg.std) + np.array(cfg.mean)
+    transformed_image = _unnormalize(transformed_image, cfg.mean, cfg.std)
     transformed_image = np.clip(transformed_image, 0, 1)
     return transformed_image
+
 
 def visualize_transform(image, transforms, cfg):
     image = Image.open(image).convert('RGB')
@@ -123,13 +125,11 @@ def _get_all_predictions(model, loader, device, get_misclassified=False):
     else:
         return np.array(all_labels), np.array(all_preds)
 
+
 def plot_confusion_matrix(model, test_set, cfg):
     true_labels, pred_labels = _get_all_predictions(model, test_set, cfg.device)
-
-    id2label = {i: class_name for i, class_name in enumerate(cfg.classes)}
-
     cm = confusion_matrix(true_labels, pred_labels)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=id2label.values())
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=cfg.id2label.values())
     disp.plot(cmap=plt.cm.Blues, colorbar=False)
 
 
@@ -137,17 +137,21 @@ def classified_wrongly(model, test_set, cfg):
     images, labels, true = _get_all_predictions(
         model, test_set, cfg.device, get_misclassified=True
     )
-    wrong = np.nonzero(labels != true)
+    wrong = np.nonzero(labels != true)[0]
     unbatch_images = {}
     i = 0
     for batches in images:
         for image in batches:
             unbatch_images[i] = image.transpose(1, 2, 0)
             i += 1
-    
-    return unbatch_images, wrong[0] , labels, true
+    return (
+        [unbatch_images[x] for x in wrong],
+        [true[x] for x in wrong],
+        [labels[x] for x in wrong]
+    )
 
-def display_wrong_nn(images, labels, preds, classes, nxn=5):
+
+def display_wrong_nxn(cfg, images, labels, preds, classes, normalize=True, nxn=5):
     figsize = np.max([10, nxn**3 // 2])
     
     if figsize > 15:
@@ -157,7 +161,11 @@ def display_wrong_nn(images, labels, preds, classes, nxn=5):
     for i in range(nxn**2):
         image_label = classes[labels[i]]
         pred_label = classes[preds[i]]
-        image = images[i] * np.array(cfg.std) + np.array(cfg.mean)
+        if normalize:
+            image = _unnormalize(images[i], cfg.mean, cfg.std)
+        else:
+            image = images[i]
+
         plt.subplot(nxn, nxn, i + 1)
         plt.imshow(image)
         plt.xticks([]), plt.yticks([])
