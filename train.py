@@ -42,7 +42,7 @@ def main(args):
         tracker=tracker,
         printing=True
     )
-    metric_data.to_csv("log/training_log.csv", index=False)
+    metric_data.to_csv("training_log.csv", index=False)
 
     if cfg.onnx:
         convert_onnx(f"{cfg.model}.pth")

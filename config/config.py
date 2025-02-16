@@ -2,8 +2,6 @@ import torch
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
-# add save path?
-# add weights? would make it easier to run more "dynamic"?
 class cfg:
     main_path = 'data/'
     train_dir = main_path + 'seg_train/seg_train/'
@@ -12,6 +10,8 @@ class cfg:
         'mountain', 'street', 'glacier',
         'buildings', 'sea', 'forest'
     ]
+    label2id = {class_name: i for i, class_name in enumerate(classes)}
+    id2label = {i: class_name for i, class_name in enumerate(classes)}
     
     model = "resnet50" # supports resnet18-101
     onnx = True # save model as onnx

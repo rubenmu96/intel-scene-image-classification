@@ -66,10 +66,8 @@ def create_dataframe(path, classes):
 
 def load_data(cfg):
     """Get data..."""
-    label2id = {class_name: i for i, class_name in enumerate(cfg.classes)}
-
-    train_set = create_dataframe(cfg.train_dir, label2id)
-    test_set = create_dataframe(cfg.test_dir, label2id)
+    train_set = create_dataframe(cfg.train_dir, cfg.label2id)
+    test_set = create_dataframe(cfg.test_dir, cfg.label2id)
 
     train = IntelDataset(train_set, cfg.train_transform)
     test = IntelDataset(test_set, cfg.test_transform)
