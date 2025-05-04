@@ -33,6 +33,7 @@ def main(args):
         lr=cfg.learning_rate,
         weight_decay=cfg.weight_decay
     )
+    # add scheduler
 
     metric_data, trained_model = classifier.run(
         train_data=train_loader,

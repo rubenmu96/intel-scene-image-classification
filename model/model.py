@@ -31,6 +31,7 @@ class ImageClassifier:
         return model.to(self.device)
     
     def _get_model_and_weights(self):
+        # can improve it by using weights = ""
         model_mapping = {
             "resnet18": (models.resnet18, models.ResNet18_Weights.DEFAULT),
             "resnet34": (models.resnet34, models.ResNet34_Weights.DEFAULT),
@@ -147,7 +148,6 @@ class ImageClassifier:
             if printing:
                 self.print_metrics(epoch_metrics)
 
-            
             es, best_loss, stop = self.early_stopping(
                 es, valid_loss, best_loss, self.cfg.early_stopping, self.cfg.save_path, reset=self.cfg.reset
             )

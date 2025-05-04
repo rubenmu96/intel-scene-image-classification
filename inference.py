@@ -29,7 +29,7 @@ def gradio_application(cfg, model, model_path, n_preds=3):
         if image_np.shape[2] == 3:
             image_np = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
 
-        augmented = cfg.transform(image=image_np)
+        augmented = cfg.test_transform(image=image_np)
         inp = augmented['image'].unsqueeze(0)
 
         if model_path.endswith(".onnx"):
@@ -42,7 +42,7 @@ def gradio_application(cfg, model, model_path, n_preds=3):
                 prediction = model(inp).squeeze(0).numpy()
 
         prediction = np.exp(prediction) / np.sum(np.exp(prediction))
-        probs = {cfg.labels[i]: float(prediction[i]) for i in range(len(cfg.labels))}
+        probs = {cfg.classes[i]: float(prediction[i]) for i in range(len(cfg.classes))}
         sorted_probs = sorted(probs.items(), key=lambda x: x[1], reverse=True)
         
         return {label: prob for label, prob in sorted_probs}
